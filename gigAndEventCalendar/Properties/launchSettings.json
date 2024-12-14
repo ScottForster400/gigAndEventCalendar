@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "gigAndEventCalendar": {
+      "commandName": "Project",
+      "commandLineArgs": "--add test"
+    }
+  }
+}
