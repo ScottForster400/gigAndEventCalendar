@@ -128,7 +128,7 @@ namespace gigAndEventCalendar
 
         public List<string> getInfo()
         {
-            List<string> info = new List<string>()
+            List<string> info = new List<string>(8)
             {
                 $"|{Convert.ToString(gigId)}",
                 $"{name}",

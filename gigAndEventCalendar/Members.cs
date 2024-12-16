@@ -4,9 +4,9 @@ class Members
 {
     private Dictionary<int, Member> memberDict;
 
-    public Members()
+    public Members(int dictLength)
     {
-        memberDict = new Dictionary<int, Member>();
+        memberDict = new Dictionary<int, Member>(dictLength);
     }
 
 
@@ -106,7 +106,7 @@ class Members
     {
         List<string> titles = getHeaderItems();
         
-        List<int> padding = new List<int>();
+        List<int> padding = new List<int>(5);
         if (memberDict.Count == 0)
         {
             foreach (string title in titles)

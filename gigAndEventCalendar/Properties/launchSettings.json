@@ -2,7 +2,7 @@
   "profiles": {
     "gigAndEventCalendar": {
       "commandName": "Project",
-      "commandLineArgs": "--add test"
+      "commandLineArgs": "--show test"
     }
   }
 }

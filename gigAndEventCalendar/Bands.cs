@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,9 +13,9 @@ namespace gigAndEventCalendar
         private Dictionary<string, Band> bandDict;
         private string filePath = "bandInfo.dat";
 
-        public Bands()
+        public Bands(int dictLength)
         {
-            bandDict = new Dictionary<string, Band>();
+            bandDict = new Dictionary<string, Band>(dictLength);
         }
 
 
@@ -38,7 +39,7 @@ namespace gigAndEventCalendar
                     Console.ReadLine();
                 }
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
                 Console.WriteLine($"Error: {ex.Message}");
                 Console.WriteLine();
@@ -61,7 +62,7 @@ namespace gigAndEventCalendar
 
 
         //Get Bands
-        public Dictionary<string,Band> GetBands()
+        public Dictionary<string, Band> GetBands()
         {
 
             return bandDict;
@@ -123,7 +124,7 @@ namespace gigAndEventCalendar
         }
 
         public void ReadBinaryFile()
-        { 
+        {
             int skipped = 0;
             try
             {
@@ -141,8 +142,14 @@ namespace gigAndEventCalendar
                     string bandName = br.ReadString();
                     AddBandFromFile(bandName);
 
+                    //fetches current band - stops it having to be fetched every time its used during the loop
+                    Band currentBand = bandDict[bandName];
+
                     //gets the pointer for number of members and loops through to create that amount of members 
-                    int memberCount = br.ReadInt32();
+                    int memberCount = br.ReadInt32() ;
+
+                    //Added five so that the dict is 5 spaces bigger allows aat least 5 members to be added before size has to be increased
+                    currentBand.InitialiseMemCollection(memberCount + 5);
                     for (int i = 0; i < memberCount; i++)
                     {
                         string memName = br.ReadString();
@@ -150,11 +157,14 @@ namespace gigAndEventCalendar
                         string memJoinDate = br.ReadString();
                         string memInstrument = br.ReadString();
 
-                        bandDict[bandName].getMembers().addMember(memName, Convert.ToString(memAge), memJoinDate, memInstrument);
+                        currentBand.getMemberCollection().addMember(memName, Convert.ToString(memAge), memJoinDate, memInstrument);
                     }
 
                     //gets the pointer for number of members and loops through to create that amount of members 
                     int gigCount = br.ReadInt32();
+
+                    //Added five so that the dict is 10 spaces bigger allows aat least 10 members to be added before size has to be increased
+                    currentBand.InitialiseGigCollection(gigCount + 10);
                     for (int i = 0; i < gigCount; i++)
                     {
                         string gigName = br.ReadString();
@@ -165,7 +175,7 @@ namespace gigAndEventCalendar
                         string gigAdress = br.ReadString();
                         string gigPostcode = br.ReadString();
 
-                        bandDict[bandName].GetGigs().addGig(gigName, gigDate, gigTime, Convert.ToString(gigPrice), Convert.ToString(gigCapacity), gigAdress, gigPostcode);
+                        currentBand.GetGigCollection().addGig(gigName, gigDate, gigTime, Convert.ToString(gigPrice), Convert.ToString(gigCapacity), gigAdress, gigPostcode);
                     }
                 }
                 br.Close();
@@ -199,8 +209,48 @@ namespace gigAndEventCalendar
 
 
         }
-    }
 
+        public void SaveToBinaryFileParallel(ConcurrentDictionary<string,Band> bandDictCon)
+        {
+            try
+            {
+                FileStream file = File.Open(filePath, FileMode.Create);
+                BinaryWriter bw = new BinaryWriter(file);
+                int bandCount = bandDictCon.Count;
+                bw.Write(bandCount);
+                Parallel.ForEach(bandDictCon.Values , band =>
+                {
+                    band.writeBinary(bw);
+                });
+                bw.Close();
+                file.Close();
+            }
+            catch (FileNotFoundException e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine("Creating File");
+                try
+                {
+                    File.Create(filePath).Close();
+                    Console.Write("Press Enter to Continue...");
+                    Console.ReadLine();
+                    Console.Clear();
+                }
+                catch (Exception e2)
+                {
+                    Console.WriteLine(e2.Message);
+                    Environment.Exit(1);
+                }
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Environment.Exit(1);
+            }
+
+        }
+    }
 
 }
 

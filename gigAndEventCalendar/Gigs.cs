@@ -5,7 +5,7 @@ class Gigs
     private Dictionary<int, Gig> gigDict;
     private string filePath = "gigs.txt";
 
-    public Gigs()
+    public Gigs(int dictLength)
     {
         gigDict = new Dictionary<int, Gig>();
     }
@@ -123,7 +123,7 @@ class Gigs
     {
         List<string> titles = getHeaderItems();
         
-        List<int> padding = new List<int>();
+        List<int> padding = new List<int>(8);
         if (gigDict.Count == 0)
         {
             foreach (string title in titles)

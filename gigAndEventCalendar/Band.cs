@@ -1,5 +1,6 @@
 ﻿
 using gigAndEventCalendar;
+using System.Collections.Concurrent;
 
 namespace gigAndEventCalendar
 {
@@ -14,10 +15,20 @@ namespace gigAndEventCalendar
         public Band(string bandName)
         {
             this.bandName = bandName;
-            bandMembers = new Members();
-            bandGigs = new Gigs();
 
         }
+
+        //Initialise Collections - this is done so i can correctly pass in the length needed for each collection
+
+        public void InitialiseMemCollection(int dictLength)
+        {
+            bandMembers = new Members(dictLength);
+        }
+        public void InitialiseGigCollection(int dictLength)
+        {
+            bandGigs = new Gigs(dictLength);
+        }
+
 
         //set commands
         public void setName(string bandName)
@@ -41,11 +52,11 @@ namespace gigAndEventCalendar
         {
             return bandName;
         }
-        public Members getMembers()
+        public Members getMemberCollection()
         {
             return bandMembers;
         }
-        public Gigs GetGigs()
+        public Gigs GetGigCollection()
         {
             return bandGigs;
         }
@@ -68,6 +79,26 @@ namespace gigAndEventCalendar
             {
                 gig.writeBinary(bw);
             }
+        }
+
+        public  void writeBinaryCon(BinaryWriter bw)
+        {
+            bw.Write(bandName);
+            int memberCount = bandMembers.getCount();
+            bw.Write(memberCount);
+            ConcurrentDictionary<int, Member> conMems = new ConcurrentDictionary<int, Member>(bandMembers.GetMembers());
+            
+            Parallel.ForEach(conMems.Values, member =>
+            {
+                member.writeBinary(bw);
+            });
+            int gigCount = bandGigs.getCount();
+            ConcurrentDictionary<int, Gig> conBand = new ConcurrentDictionary<int, Gig>(bandGigs.GetGigs());
+            bw.Write(gigCount);
+            Parallel.ForEach(conBand.Values, gig =>
+            {
+                gig.writeBinary(bw);
+            });
         }
     }
 }
