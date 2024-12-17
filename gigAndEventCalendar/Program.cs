@@ -117,6 +117,7 @@ if (args.Length > 0)
         Console.WriteLine("Commands:");
         Console.WriteLine("'--add bandName' - Add specified band to the program use '-' instead of spaces");
         Console.WriteLine("'--show bandName' - Launches application displaying the specified bands info");
+        Console.WriteLine("'--remove bandName' - Removes specified band from the program use '-' instead of spaces");
         Console.WriteLine("");
 
         Console.WriteLine("Band List:");
