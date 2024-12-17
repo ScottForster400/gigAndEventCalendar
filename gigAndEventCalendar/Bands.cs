@@ -23,6 +23,7 @@ namespace gigAndEventCalendar
         {
             try
             {
+                bandName = Truncate(bandName, 80);
                 if (bandDict.ContainsKey(bandName))
                 {
                     Console.WriteLine("Band already exists");
@@ -32,6 +33,7 @@ namespace gigAndEventCalendar
                 }
                 else
                 {
+                    
                     bandDict.Add(bandName, new Band(bandName));
                     Console.WriteLine("Band successfully added");
                     Console.WriteLine();
@@ -54,9 +56,15 @@ namespace gigAndEventCalendar
             bandDict.Add(bandName, new Band(bandName));
         }
 
-        public void storeBand(Band selectedBand)
+        public void StoreBand(Band selectedBand)
         {
-            bandDict.Add(selectedBand.getName(), selectedBand);
+            bandDict.Add(selectedBand.GetName(), selectedBand);
+        }
+
+        public void RemoveBand(Band SelectedBand)
+        {
+            bandDict.Remove(SelectedBand.GetName());
+            SaveToBinaryFile();
         }
 
 
@@ -92,7 +100,7 @@ namespace gigAndEventCalendar
                 bw.Write(bandCount);
                 foreach (Band band in bandDict.Values)
                 {
-                    band.writeBinary(bw);
+                    band.WriteBinary(bw);
                 }
                 bw.Close();
                 file.Close();
@@ -157,7 +165,7 @@ namespace gigAndEventCalendar
                         string memJoinDate = br.ReadString();
                         string memInstrument = br.ReadString();
 
-                        currentBand.getMemberCollection().addMember(memName, Convert.ToString(memAge), memJoinDate, memInstrument);
+                        currentBand.GetMemberCollection().AddMember(memName, Convert.ToString(memAge), memJoinDate, memInstrument);
                     }
 
                     //gets the pointer for number of members and loops through to create that amount of members 
@@ -175,7 +183,7 @@ namespace gigAndEventCalendar
                         string gigAdress = br.ReadString();
                         string gigPostcode = br.ReadString();
 
-                        currentBand.GetGigCollection().addGig(gigName, gigDate, gigTime, Convert.ToString(gigPrice), Convert.ToString(gigCapacity), gigAdress, gigPostcode);
+                        currentBand.GetGigCollection().AddGig(gigName, gigDate, gigTime, Convert.ToString(gigPrice), Convert.ToString(gigCapacity), gigAdress, gigPostcode);
                     }
                 }
                 br.Close();
@@ -220,7 +228,7 @@ namespace gigAndEventCalendar
                 bw.Write(bandCount);
                 Parallel.ForEach(bandDictCon.Values , band =>
                 {
-                    band.writeBinary(bw);
+                    band.WriteBinary(bw);
                 });
                 bw.Close();
                 file.Close();
@@ -250,7 +258,23 @@ namespace gigAndEventCalendar
             }
 
         }
+
+        public string Truncate(string inputtedString, int maxLength)
+        {
+            if (inputtedString.Length > maxLength)
+            {
+                Console.WriteLine($"{inputtedString} is above {maxLength}");
+                inputtedString = inputtedString.Substring(0, maxLength);
+                Console.WriteLine($"It has been shortened to {inputtedString}");
+                Console.WriteLine();
+
+            }
+
+            return inputtedString;
+        }
     }
+
+
 
 }
 

@@ -72,7 +72,7 @@ if (args.Length > 0)
     if (args[0] == "--show")
     {
         int bandCount = GetBandCountFromFile();
-        
+
         Bands bandDict = new Bands(bandCount);
         bandDict.ReadBinaryFile();
 
@@ -81,7 +81,7 @@ if (args.Length > 0)
         {
             while (true)
             {
-                homeMenuDisplay(bandDict.GetBand(args[1]),bandDict);
+                HomeMenuDisplay(bandDict.GetBand(args[1]), bandDict);
             }
         }
         else
@@ -115,7 +115,7 @@ if (args.Length > 0)
         bandDict.ReadBinaryFile();
 
         Console.WriteLine("Commands:");
-        Console.WriteLine("'--add bandName' - Add specified band to the program");
+        Console.WriteLine("'--add bandName' - Add specified band to the program use '-' instead of spaces");
         Console.WriteLine("'--show bandName' - Launches application displaying the specified bands info");
         Console.WriteLine("");
 
@@ -125,6 +125,30 @@ if (args.Length > 0)
             Console.WriteLine($"- {name}");
         }
         Console.WriteLine();
+    }
+    else if (args[0] == "--remove")
+    {
+        int bandCount = GetBandCountFromFile();
+
+        Bands bandDict = new Bands(bandCount);
+        bandDict.ReadBinaryFile();
+
+        if (bandDict.GetBands().ContainsKey(args[1]))
+        {
+            bandDict.RemoveBand(bandDict.GetBand(args[1]));
+            Sucess("Removed");
+        }
+        else
+        {
+            Console.WriteLine("Band does not exist you can add this band by using '--add' command");
+
+            Console.WriteLine("Band List:");
+            foreach (String name in bandDict.GetBands().Keys)
+            {
+                Console.WriteLine($"- {name}");
+            }
+            Console.WriteLine();
+        }
     }
     else
     {
@@ -142,7 +166,6 @@ else
 //gigs
 void ViewGigs(Gigs gigDict, int gigStartAt, Bands bandDict, Dictionary<int,Gig> orderedGigs)
 {
-    //has to be one instead of zero to allow it to work with for statement
     List<int> padding = new List<int>(8);
     int borderLength = 0;
     List<int> navPadding = new List<int>(6);
@@ -157,10 +180,11 @@ void ViewGigs(Gigs gigDict, int gigStartAt, Bands bandDict, Dictionary<int,Gig> 
     }
 
 
-    //If number is a multiple of ten prevents creating an extra page that is blank
-    if (pageRemainder == 0 && pageNumber>0)
+   // If number is a multiple of ten prevents creating an extra page that is blank
+    if (pageRemainder == 0 && pageNumber > 0)
     {
         pageNumber = pageNumber - 1;
+        pageRemainder = 10;
     }
 
 
@@ -171,7 +195,7 @@ void ViewGigs(Gigs gigDict, int gigStartAt, Bands bandDict, Dictionary<int,Gig> 
 
   
     //Adds the largest length of each attribute of gigs for display formatting
-    padding = gigDict.getPadding();
+    padding = gigDict.GetPadding();
 
     //gets border length for table
     borderLength = 0;
@@ -191,10 +215,11 @@ void ViewGigs(Gigs gigDict, int gigStartAt, Bands bandDict, Dictionary<int,Gig> 
     Console.Clear();
     Console.WriteLine("\r\n  _______ ___ _______     _______ _______ ___     _______ ______  ______   _______ _______ \r\n |   _   |   |   _   |   |   _   |   _   |   |   |   _   |   _  \\|   _  \\ |   _   |   _   \\\r\n |.  |___|.  |.  |___|   |.  1___|.  1   |.  |   |.  1___|.  |   |.  |   \\|.  1   |.  l   /\r\n |.  |   |.  |.  |   |   |.  |___|.  _   |.  |___|.  __)_|.  |   |.  |    |.  _   |.  _   1\r\n |:  1   |:  |:  1   |   |:  1   |:  |   |:  1   |:  1   |:  |   |:  1    |:  |   |:  |   |\r\n |::.. . |::.|::.. . |   |::.. . |::.|:. |::.. . |::.. . |::.|   |::.. . /|::.|:. |::.|:. |\r\n `-------`---`-------'   `-------`--- ---`-------`-------`--- ---`------' `--- ---`--- ---'\r\n                                                                                           \r\n");
 
-    Console.WriteLine($"<{Convert.ToString(gigStartAt)[0]}/{pageNumber}>");
+    //This displays page count - i add one so that it begins on page 1 instead of 0
+    Console.WriteLine($"<{gigStartAt/10+1}/{pageNumber+1}>");
 
     //Writes each gig into a table
-    TableHeadersWrite(padding, borderLength,gigDict.getHeaderItems());
+    TableHeadersWrite(padding, borderLength,gigDict.GetHeaderItems());
 
 
     if (pageNumber > 0)
@@ -203,7 +228,7 @@ void ViewGigs(Gigs gigDict, int gigStartAt, Bands bandDict, Dictionary<int,Gig> 
         {
             for (int i = gigStartAt; i < (pageRemainder+gigStartAt); i++)
             {
-                Console.WriteLine($"{orderedGigs.Values.ElementAt(i).getFormatted(padding)}");
+                Console.WriteLine($"{orderedGigs.Values.ElementAt(i).GetFormatted(padding)}");
 
             }
             
@@ -212,7 +237,7 @@ void ViewGigs(Gigs gigDict, int gigStartAt, Bands bandDict, Dictionary<int,Gig> 
         {
             for (int i = gigStartAt; i < gigStartAt + 10; i++)
             {
-                Console.WriteLine($"{orderedGigs.Values.ElementAt(i).getFormatted(padding)}");
+                Console.WriteLine($"{orderedGigs.Values.ElementAt(i).GetFormatted(padding)}");
 
             }
         }
@@ -222,7 +247,7 @@ void ViewGigs(Gigs gigDict, int gigStartAt, Bands bandDict, Dictionary<int,Gig> 
     {
         for (int i = gigStartAt; i < (pageRemainder + gigStartAt); i++)
         {
-            Console.WriteLine($"{orderedGigs.Values.ElementAt(i).getFormatted(padding)}");
+            Console.WriteLine($"{orderedGigs.Values.ElementAt(i).GetFormatted(padding)}");
 
         }
     }
@@ -323,24 +348,18 @@ void ViewGigs(Gigs gigDict, int gigStartAt, Bands bandDict, Dictionary<int,Gig> 
    
 }
 
+//Selects gig to edit or selects gig to remove depending on "selectedFunction" passed in
 void GigSelect(Dictionary<int,Gig> orderedGigs, List<int> padding, int borderLength, Gigs gigDict, int gigStartAt, int pageRemainder, bool lastPage, Bands bandDict, string selectedFunction)
 {
     // need to cretae a dictiorny of int and strings to allow it to get passed into VerticalDictNav 
      Dictionary<int, string> orderdGigsString = new Dictionary<int, string>(10);
    
-    //foreach (Gig gig in orderedGigs.Values)
-    //{
-    //    orderdGigsString.Add(gig.getGigId(), $"{gig.getFormatted(padding)}\u001b[0m");
-        
-    //};
-
-   
-    
+    // If on the last page it will only display the remainder number of gigs - Add gig start at so it fetches from the correct point in the dictionary
     if (lastPage == true)
     {
         for (int i = gigStartAt; i < (pageRemainder + gigStartAt); i++)
         {
-            orderdGigsString.Add(orderedGigs.Values.ElementAt(i).getGigId(), $"{orderedGigs.Values.ElementAt(i).getFormatted(padding)}\u001b[0m");
+            orderdGigsString.Add(orderedGigs.Values.ElementAt(i).GetGigId(), $"{orderedGigs.Values.ElementAt(i).GetFormatted(padding)}\u001b[0m");
 
         }
 
@@ -349,7 +368,7 @@ void GigSelect(Dictionary<int,Gig> orderedGigs, List<int> padding, int borderLen
     {
         for (int i = gigStartAt; i < gigStartAt + 10; i++)
         {
-            orderdGigsString.Add(orderedGigs.Values.ElementAt(i).getGigId(), $"{orderedGigs.Values.ElementAt(i).getFormatted(padding)}\u001b[0m");
+            orderdGigsString.Add(orderedGigs.Values.ElementAt(i).GetGigId(), $"{orderedGigs.Values.ElementAt(i).GetFormatted(padding)}\u001b[0m");
 
         }
     }
@@ -360,7 +379,7 @@ void GigSelect(Dictionary<int,Gig> orderedGigs, List<int> padding, int borderLen
     Console.WriteLine();
     
 
-    TableHeadersWrite(padding, borderLength, gigDict.getHeaderItems());
+    TableHeadersWrite(padding, borderLength, gigDict.GetHeaderItems());
 
     int option = VerticalDictNav(orderdGigsString, padding,true,borderLength,selectedFunction);
 
@@ -368,7 +387,7 @@ void GigSelect(Dictionary<int,Gig> orderedGigs, List<int> padding, int borderLen
     //Goes to certain function depending on selected option
     if(option<= orderedGigs.Count() && option >= 0)
     {
-        int selectedGigId = orderedGigs.ElementAt(option - 1).Value.getGigId();
+        int selectedGigId = orderedGigs.ElementAt(option - 1).Value.GetGigId();
         if (selectedFunction == "edit")
         {
             EditGigInfo(orderedGigs[selectedGigId], padding, borderLength, gigDict, bandDict);
@@ -376,11 +395,11 @@ void GigSelect(Dictionary<int,Gig> orderedGigs, List<int> padding, int borderLen
         else
         {
             // Removes selected gig
-            bool sucesssfull = gigDict.removeGig(selectedGigId);
+            bool sucesssfull = gigDict.RemoveGig(selectedGigId);
             if (sucesssfull == true)
             {
                 bandDict.SaveToBinaryFile();
-                sucess("Removed");
+                Sucess("Removed");
             }
         };
     }
@@ -418,9 +437,9 @@ void AddGig(Gigs gigDict, Bands bandDict)
     Console.Write("Postcode Of Gig: ");
     string gigPostcode = Console.ReadLine();
 
-    gigDict.addGig(gigName, gigDate, gigTime, gigPrice, gigCapacity, gigAdress, gigPostcode);
+    gigDict.AddGig(gigName, gigDate, gigTime, gigPrice, gigCapacity, gigAdress, gigPostcode);
     bandDict.SaveToBinaryFile();
-    sucess("Added");
+    Sucess("Added");
 }
 
 void EditGigInfo(Gig selectedGig, List<int> padding, int borderLength, Gigs gigDict, Bands bandDict)
@@ -430,9 +449,9 @@ void EditGigInfo(Gig selectedGig, List<int> padding, int borderLength, Gigs gigD
     //Main Title
     Console.WriteLine("\r\n  _______ ___ _______     _______ _______ ___     _______ ______  ______   _______ _______ \r\n |   _   |   |   _   |   |   _   |   _   |   |   |   _   |   _  \\|   _  \\ |   _   |   _   \\\r\n |.  |___|.  |.  |___|   |.  1___|.  1   |.  |   |.  1___|.  |   |.  |   \\|.  1   |.  l   /\r\n |.  |   |.  |.  |   |   |.  |___|.  _   |.  |___|.  __)_|.  |   |.  |    |.  _   |.  _   1\r\n |:  1   |:  |:  1   |   |:  1   |:  |   |:  1   |:  1   |:  |   |:  1    |:  |   |:  |   |\r\n |::.. . |::.|::.. . |   |::.. . |::.|:. |::.. . |::.. . |::.|   |::.. . /|::.|:. |::.|:. |\r\n `-------`---`-------'   `-------`--- ---`-------`-------`--- ---`------' `--- ---`--- ---'\r\n                                                                                           \r\n");
 
-    TableHeadersWrite(padding,borderLength, gigDict.getHeaderItems());
+    TableHeadersWrite(padding,borderLength, gigDict.GetHeaderItems());
 
-    List<string> gigInf = selectedGig.getInfo();
+    List<string> gigInf = selectedGig.GetInfo();
 
     int option = HorizontalListNav(gigInf,padding,true,borderLength);
 
@@ -451,9 +470,9 @@ void EditGigInfo(Gig selectedGig, List<int> padding, int borderLength, Gigs gigD
         case 2:
             Console.WriteLine($"Current Name: {gigInf[option - 1]}");
             Console.Write("New Name: ");
-            selectedGig.setName(Console.ReadLine());
+            selectedGig.SetName(Console.ReadLine());
             bandDict.SaveToBinaryFile();
-            sucess("Updated");
+            Sucess("Updated");
             break;
         case 3:
             while (valid == false)
@@ -461,11 +480,11 @@ void EditGigInfo(Gig selectedGig, List<int> padding, int borderLength, Gigs gigD
                 Console.WriteLine("Enter With Format DD/MM/YYYY");
                 Console.WriteLine($"Current Date: {gigInf[option - 1]}");
                 Console.Write("New Date: ");
-                valid = selectedGig.setDate(Console.ReadLine());
+                valid = selectedGig.SetDate(Console.ReadLine());
     
             }
             bandDict.SaveToBinaryFile();
-            sucess("Updated");
+            Sucess("Updated");
             break;
         case 4:
             while (valid == false)
@@ -473,11 +492,11 @@ void EditGigInfo(Gig selectedGig, List<int> padding, int borderLength, Gigs gigD
                 Console.WriteLine("Enter With Format HH:mm");
                 Console.WriteLine($"Current Time: {gigInf[option - 1]}");
                 Console.Write("New Time: ");
-                valid = selectedGig.setTime(Console.ReadLine());
+                valid = selectedGig.SetTime(Console.ReadLine());
 
             }
             bandDict.SaveToBinaryFile();
-            sucess("Updated");
+            Sucess("Updated");
             break;
 
         case 5:
@@ -485,35 +504,35 @@ void EditGigInfo(Gig selectedGig, List<int> padding, int borderLength, Gigs gigD
             {
                 Console.WriteLine($"Current Price: £{gigInf[option - 1]}");
                 Console.Write("New Price: ");
-                valid = selectedGig.setPrice(Console.ReadLine());
+                valid = selectedGig.SetPrice(Console.ReadLine());
 
             }
             bandDict.SaveToBinaryFile();
-            sucess("Updated");
+            Sucess("Updated");
             break;
         case 6:
             while (valid == false)
             {
                 Console.WriteLine($"Current Capacity: {gigInf[option - 1]}");
                 Console.Write("New Capacity: ");
-                valid = selectedGig.setCapacity(Console.ReadLine());
+                valid = selectedGig.SetCapacity(Console.ReadLine());
             }
             bandDict.SaveToBinaryFile();
-            sucess("Updated");
+            Sucess("Updated");
             break;
         case 7:
             Console.WriteLine($"Current Address: {gigInf[option - 1]}");
             Console.Write("New Address: ");
-            selectedGig.editAddress(Console.ReadLine());
+            selectedGig.EditAddress(Console.ReadLine());
             bandDict.SaveToBinaryFile();
-            sucess("Updated");
+            Sucess("Updated");
             break;
         case 8:
             Console.WriteLine($"Current Postcode: {gigInf[option - 1]}");
             Console.Write("New Postcode: ");
-            selectedGig.setPostcode(Console.ReadLine());
+            selectedGig.SetPostcode(Console.ReadLine());
             bandDict.SaveToBinaryFile();
-            sucess("Updated");
+            Sucess("Updated");
             break;
         default:
             Console.Clear();
@@ -527,14 +546,14 @@ void EditGigInfo(Gig selectedGig, List<int> padding, int borderLength, Gigs gigD
 //members
 void ViewMembers(Members memDict, int memStartAt, Bands bandDict, Dictionary<int, Member> orderedMembers)
 {
-    //has to be one instead of zero to allow it to work with for statement
+ 
 
+    //Defining variables
     List<int> padding = new List<int>(5);
     int borderLength = 0;
     List<int> navPadding = new List<int>(6);
     bool hasEntries = memDict.GetMembers().Count() != 0;
 
-    //
     int pageNumber = (memDict.GetMembers().Count() / 10);
     int pageRemainder = memDict.GetMembers().Count % 10;
 
@@ -550,6 +569,7 @@ void ViewMembers(Members memDict, int memStartAt, Bands bandDict, Dictionary<int
     if (pageRemainder == 0 && pageNumber > 0)
     {
         pageNumber = pageNumber - 1;
+        pageRemainder = 10;
     }
 
 
@@ -559,7 +579,7 @@ void ViewMembers(Members memDict, int memStartAt, Bands bandDict, Dictionary<int
     int navItemNums = navItems.Count();
    
     //Adds the largest length of each attribute of gigs for display formatting
-    padding = memDict.getPadding();
+    padding = memDict.GetPadding();
 
     //gets border length for table
     borderLength = 0;
@@ -572,7 +592,7 @@ void ViewMembers(Members memDict, int memStartAt, Bands bandDict, Dictionary<int
     //gets padding for options needs to be a list due to HorizontalListNav parameters
     for (int i = 0; i < navItemNums; i++)
     {
-        navPadding.Add(borderLength / navItemNums + 8);
+        navPadding.Add(borderLength / navItemNums + 10);
     }
 
    
@@ -581,10 +601,10 @@ void ViewMembers(Members memDict, int memStartAt, Bands bandDict, Dictionary<int
     Console.WriteLine("\r\n  _______ ___ _______     _______ _______ ___     _______ ______  ______   _______ _______ \r\n |   _   |   |   _   |   |   _   |   _   |   |   |   _   |   _  \\|   _  \\ |   _   |   _   \\\r\n |.  |___|.  |.  |___|   |.  1___|.  1   |.  |   |.  1___|.  |   |.  |   \\|.  1   |.  l   /\r\n |.  |   |.  |.  |   |   |.  |___|.  _   |.  |___|.  __)_|.  |   |.  |    |.  _   |.  _   1\r\n |:  1   |:  |:  1   |   |:  1   |:  |   |:  1   |:  1   |:  |   |:  1    |:  |   |:  |   |\r\n |::.. . |::.|::.. . |   |::.. . |::.|:. |::.. . |::.. . |::.|   |::.. . /|::.|:. |::.|:. |\r\n `-------`---`-------'   `-------`--- ---`-------`-------`--- ---`------' `--- ---`--- ---'\r\n                                                                                           \r\n");
 
     //Displays pagenumber
-    Console.WriteLine($"<{Convert.ToString(memStartAt)[0]}/{pageNumber}>");
+    Console.WriteLine($"<{memStartAt/10+1}/{pageNumber+1}>");
 
     //Writes each gig into a table
-    TableHeadersWrite(padding, borderLength,memDict.getHeaderItems());
+    TableHeadersWrite(padding, borderLength,memDict.GetHeaderItems());
 
 
     if (pageNumber > 0)
@@ -593,7 +613,7 @@ void ViewMembers(Members memDict, int memStartAt, Bands bandDict, Dictionary<int
         {
             for (int i = memStartAt; i < (pageRemainder + memStartAt); i++)
             {
-                Console.WriteLine($"{orderedMembers.Values.ElementAt(i).getFormatted(padding)}");
+                Console.WriteLine($"{orderedMembers.Values.ElementAt(i).GetFormatted(padding)}");
 
             }
 
@@ -602,7 +622,7 @@ void ViewMembers(Members memDict, int memStartAt, Bands bandDict, Dictionary<int
         {
             for (int i = memStartAt; i < memStartAt + 10; i++)
             {
-                Console.WriteLine($"{orderedMembers.Values.ElementAt(i).getFormatted(padding)}");
+                Console.WriteLine($"{orderedMembers.Values.ElementAt(i).GetFormatted(padding)}");
 
             }
         }
@@ -612,7 +632,7 @@ void ViewMembers(Members memDict, int memStartAt, Bands bandDict, Dictionary<int
     {
         for (int i = memStartAt; i < (pageRemainder + memStartAt); i++)
         {
-            Console.WriteLine($"{orderedMembers.Values.ElementAt(i).getFormatted(padding)}");
+            Console.WriteLine($"{orderedMembers.Values.ElementAt(i).GetFormatted(padding)}");
 
         }
     }
@@ -690,15 +710,15 @@ void ViewMembers(Members memDict, int memStartAt, Bands bandDict, Dictionary<int
                 break;
             case 3:
                 Console.Clear();
-                //AddGig(gigDict, bandDict);
+                AddMember(memDict, bandDict);
                 break;
             case 4:
                 Console.Clear();
-                //EditGigSelect(orderedGigs, padding, borderLength, gigDict, gigStartAt, pageRemainder, lastPage, bandDict);
+                 MemberSelect(orderedMembers, padding, borderLength, memDict, memStartAt, pageRemainder, lastPage, bandDict,"edit");
                 break;
             case 5:
                 Console.Clear();
-                //RemoveGigSelect(gigDict, orderedGigs, padding, borderLength, gigStartAt, pageRemainder, lastPage, bandDict);
+                MemberSelect(orderedMembers, padding, borderLength, memDict, memStartAt, pageRemainder, lastPage, bandDict, "remove");
                 break;
             case 6:
                 Console.Clear();
@@ -714,6 +734,7 @@ void ViewMembers(Members memDict, int memStartAt, Bands bandDict, Dictionary<int
 
 }
 
+//Selects gig to edit or selects gig to remove depending on "selectedFunction" passed in
 void MemberSelect(Dictionary<int, Member> orderedMembers, List<int> padding, int borderLength, Members memDict, int memStartAt, int pageRemainder, bool lastPage, Bands bandDict, string selectedFunction)
 {
     // need to cretae a dictiorny of int and strings to allow it to get passed into VerticalDictNav
@@ -730,7 +751,7 @@ void MemberSelect(Dictionary<int, Member> orderedMembers, List<int> padding, int
     {
         for (int i = memStartAt; i < (pageRemainder + memStartAt); i++)
         {
-            orderedMemString.Add(orderedMembers.Values.ElementAt(i).getMemberId(), $"{orderedMembers.Values.ElementAt(i).getFormatted(padding)}\u001b[0m");
+            orderedMemString.Add(orderedMembers.Values.ElementAt(i).GetMemberId(), $"{orderedMembers.Values.ElementAt(i).GetFormatted(padding)}\u001b[0m");
 
         }
 
@@ -739,7 +760,7 @@ void MemberSelect(Dictionary<int, Member> orderedMembers, List<int> padding, int
     {
         for (int i = memStartAt; i < memStartAt + 10; i++)
         {
-            orderedMemString.Add(orderedMembers.Values.ElementAt(i).getMemberId(), $"{orderedMembers.Values.ElementAt(i).getFormatted(padding)}\u001b[0m");
+            orderedMemString.Add(orderedMembers.Values.ElementAt(i).GetMemberId(), $"{orderedMembers.Values.ElementAt(i).GetFormatted(padding)}\u001b[0m");
 
         }
     }
@@ -750,7 +771,7 @@ void MemberSelect(Dictionary<int, Member> orderedMembers, List<int> padding, int
     Console.WriteLine();
 
 
-    TableHeadersWrite(padding, borderLength, memDict.getHeaderItems());
+    TableHeadersWrite(padding, borderLength, memDict.GetHeaderItems());
 
     int option = VerticalDictNav(orderedMemString, padding, true, borderLength, selectedFunction);
 
@@ -758,7 +779,7 @@ void MemberSelect(Dictionary<int, Member> orderedMembers, List<int> padding, int
     //Goes to certain function depending on selected option
     if (option <= orderedMembers.Count() && option >= 0)
     {
-        int selectedMemId = orderedMembers.ElementAt(option - 1).Value.getMemberId();
+        int selectedMemId = orderedMembers.ElementAt(option - 1).Value.GetMemberId();
         if (selectedFunction == "edit")
         {
             EditMemberInfo(orderedMembers[selectedMemId], padding, borderLength, memDict, bandDict);
@@ -766,11 +787,11 @@ void MemberSelect(Dictionary<int, Member> orderedMembers, List<int> padding, int
         else
         {
             // Removes selected gig
-            bool sucesssfull = memDict.removeGig(selectedMemId);
+            bool sucesssfull = memDict.RemoveGig(selectedMemId);
             if (sucesssfull == true)
             {
                 bandDict.SaveToBinaryFile();
-                sucess("Removed");
+                Sucess("Removed");
             }
         };
     }
@@ -789,9 +810,9 @@ void EditMemberInfo( Member selectedMem, List<int> padding, int borderLength, Me
     //Main Title
     Console.WriteLine("\r\n  _______ ___ _______     _______ _______ ___     _______ ______  ______   _______ _______ \r\n |   _   |   |   _   |   |   _   |   _   |   |   |   _   |   _  \\|   _  \\ |   _   |   _   \\\r\n |.  |___|.  |.  |___|   |.  1___|.  1   |.  |   |.  1___|.  |   |.  |   \\|.  1   |.  l   /\r\n |.  |   |.  |.  |   |   |.  |___|.  _   |.  |___|.  __)_|.  |   |.  |    |.  _   |.  _   1\r\n |:  1   |:  |:  1   |   |:  1   |:  |   |:  1   |:  1   |:  |   |:  1    |:  |   |:  |   |\r\n |::.. . |::.|::.. . |   |::.. . |::.|:. |::.. . |::.. . |::.|   |::.. . /|::.|:. |::.|:. |\r\n `-------`---`-------'   `-------`--- ---`-------`-------`--- ---`------' `--- ---`--- ---'\r\n                                                                                           \r\n");
 
-    TableHeadersWrite(padding, borderLength, memDict.getHeaderItems());
+    TableHeadersWrite(padding, borderLength, memDict.GetHeaderItems());
 
-    List<string> memInf = selectedMem.getInfo();
+    List<string> memInf = selectedMem.GetInfo();
 
     int option = HorizontalListNav(memInf, padding, true, borderLength);
 
@@ -810,20 +831,20 @@ void EditMemberInfo( Member selectedMem, List<int> padding, int borderLength, Me
         case 2:
             Console.WriteLine($"Current Name: {memInf[option - 1]}");
             Console.Write("New Name: ");
-            selectedMem.setName(Console.ReadLine());
+            selectedMem.SetName(Console.ReadLine());
             bandDict.SaveToBinaryFile();
-            sucess("Updated");
+            Sucess("Updated");
             break;
         case 3:
             while (valid == false)
             {
                 Console.WriteLine($"Current Age: {memInf[option - 1]}");
                 Console.Write("New Age: ");
-                valid = selectedMem.setAge(Console.ReadLine());
+                valid = selectedMem.SetAge(Console.ReadLine());
 
             }
             bandDict.SaveToBinaryFile();
-            sucess("Updated");
+            Sucess("Updated");
             break;
         case 4:
             while (valid == false)
@@ -831,19 +852,19 @@ void EditMemberInfo( Member selectedMem, List<int> padding, int borderLength, Me
                 Console.WriteLine("Enter With Format MM/YYYY");
                 Console.WriteLine($"Current Join Date: {memInf[option - 1]}");
                 Console.Write("New Join Date: ");
-                valid = selectedMem.setJoinDate(Console.ReadLine());
+                valid = selectedMem.SetJoinDate(Console.ReadLine());
 
             }
             bandDict.SaveToBinaryFile();
-            sucess("Updated");
+            Sucess("Updated");
             break;
 
         case 5:
             Console.WriteLine($"Current Instrument: £{memInf[option - 1]}");
             Console.Write("New Instrument: ");
-            selectedMem.setInstrument(Console.ReadLine());
+            selectedMem.SetInstrument(Console.ReadLine());
             bandDict.SaveToBinaryFile();
-            sucess("Updated");
+            Sucess("Updated");
             break;
 
         default:
@@ -872,9 +893,9 @@ void AddMember(Members memDict, Bands bandDict)
     Console.Write("Instrument Of Member: ");
     string memInstrument = Console.ReadLine();
 
-    memDict.addMember(memName, memAge, memJoinDate, memInstrument);
+    memDict.AddMember(memName, memAge, memJoinDate, memInstrument);
     bandDict.SaveToBinaryFile();
-    sucess("Added");
+    Sucess("Added");
 }
 
 
@@ -1079,20 +1100,26 @@ int VerticalDictNav(Dictionary<int,string> selectedNavItems, List<int> padding, 
 
 
 //misc functions
-void homeMenuDisplay(Band selectedBand, Bands bandDict)
+void HomeMenuDisplay(Band selectedBand, Bands bandDict)
 {
     Console.Clear();
+
+   
 
     List<string> navItems = new List<string>
     {
         "View Gigs",
         "View Members",
-        "View Bands",
         "Exit"
     };
 
     //Main Title
     Console.WriteLine("\r\n  _______ ___ _______     _______ _______ ___     _______ ______  ______   _______ _______ \r\n |   _   |   |   _   |   |   _   |   _   |   |   |   _   |   _  \\|   _  \\ |   _   |   _   \\\r\n |.  |___|.  |.  |___|   |.  1___|.  1   |.  |   |.  1___|.  |   |.  |   \\|.  1   |.  l   /\r\n |.  |   |.  |.  |   |   |.  |___|.  _   |.  |___|.  __)_|.  |   |.  |    |.  _   |.  _   1\r\n |:  1   |:  |:  1   |   |:  1   |:  |   |:  1   |:  1   |:  |   |:  1    |:  |   |:  |   |\r\n |::.. . |::.|::.. . |   |::.. . |::.|:. |::.. . |::.. . |::.|   |::.. . /|::.|:. |::.|:. |\r\n `-------`---`-------'   `-------`--- ---`-------`-------`--- ---`------' `--- ---`--- ---'\r\n                                                                                           \r\n");
+
+    Console.WriteLine($"Welcome {selectedBand.GetName()}");
+
+    Console.WriteLine();
+    Console.WriteLine();
 
     int option = VerticalListNav(navItems);
 
@@ -1107,16 +1134,10 @@ void homeMenuDisplay(Band selectedBand, Bands bandDict)
             break;
         case 2:
             Dictionary<int, Member> orderedMembers = new Dictionary<int, Member>();
-            orderedMembers = selectedBand.getMemberCollection().GetMembers().OrderBy(memInf => memInf.Value.getName()).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-            ViewMembers(selectedBand.getMemberCollection(),0, bandDict,orderedMembers);
+            orderedMembers = selectedBand.GetMemberCollection().GetMembers().OrderBy(memInf => memInf.Value.GetMemberId()).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            ViewMembers(selectedBand.GetMemberCollection(),0, bandDict,orderedMembers);
             break;
         case 3:
-            Console.WriteLine("lemon");
-            Console.WriteLine();
-            Console.Write("Press Enter to continue...");
-            Console.ReadLine();
-            break;
-        case 4:
             Console.Clear();
             Environment.Exit(0);
             break;
@@ -1135,7 +1156,7 @@ void homeMenuDisplay(Band selectedBand, Bands bandDict)
     return;
 };
 
-void sucess(string action)
+void Sucess(string action)
 {
     Console.WriteLine($"Information {action}");
     Console.WriteLine("Please click enter to continue...");
@@ -1236,7 +1257,7 @@ int GetBandCountFromFile()
 
 
 //Testing
-void multiProcessTest()
+void MultiProcessTest()
 {
     
 
@@ -1248,16 +1269,16 @@ void multiProcessTest()
     for (int i = 0; i<100; i++)
     {
         //memberDict.addMember("bruh", "12", "12/11/2023", "guitar");
-        gigDict.addGig("test gig", "12/12/2012", "9:00", "12", "300", "Test Adress", "TEST");
+        gigDict.AddGig("test gig", "12/12/2012", "9:00", "12", "300", "Test Adress", "TEST");
         //Console.WriteLine(i);
     }
 
     for (int i = 0; i < 100; i++)
     {
         Band testBand = new Band($"test{Convert.ToString(i)}");
-        testBand.setMembers(memberDict);
-        testBand.setGigs(gigDict);
-        bandDict.storeBand(testBand);
+        testBand.SetMembers(memberDict);
+        testBand.SetGigs(gigDict);
+        bandDict.StoreBand(testBand);
     }
 
     Console.WriteLine("Write");

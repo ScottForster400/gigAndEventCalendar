@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace gigAndEventCalendar
 {
-    internal abstract class FileManagment
+    internal interface IFileManagment
     {
-        public abstract void WriteBinary(BinaryWriter bw);
+        public void WriteBinary(BinaryWriter bw);
 
-        
+
     }
 }

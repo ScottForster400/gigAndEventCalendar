@@ -9,7 +9,7 @@ using gigAndEventCalendar;
 
 namespace gigAndEventCalendar
 {
-    internal class Member : FileManagment
+    internal class Member : IFileManagment,IClassUi
     {
 
         private int memberId;
@@ -29,11 +29,11 @@ namespace gigAndEventCalendar
 
         //set commands
 
-        public void setName(string name)
+        public void SetName(string name)
         {
             this.name = name;
         }
-        public bool setAge(string selectedAge)
+        public bool SetAge(string selectedAge)
         {
             int ageConv;
             if (int.TryParse(selectedAge, out ageConv) == false)
@@ -48,7 +48,7 @@ namespace gigAndEventCalendar
                 return true;
             }
         }
-        public bool setJoinDate(string selectedJoinDate)
+        public bool SetJoinDate(string selectedJoinDate)
         {
 
             DateOnly joinDateConv;
@@ -64,59 +64,59 @@ namespace gigAndEventCalendar
                 return true;
             }
         }
-        public void setInstrument(string instrument)
+        public void SetInstrument(string instrument)
         {
             this.instrument = instrument;
         }
 
 
         //get commands
-        public List<string> getInfo()
+        public List<string> GetInfo()
         {
             List<string> info = new List<string>()
             {
                 $"|{Convert.ToString(memberId)}",
                 $"{name}",
                 $"{Convert.ToString(age)}",
-                $"{getJoinDateString()}",
+                $"{GetJoinDateString()}",
                 $"{instrument}"
             };
             return info;
         }
-        public string getFormatted(List<int> pad)
+        public string GetFormatted(List<int> pad)
         {
-            return $"|{Convert.ToString(memberId).PadRight(pad[0] - 1)}|{name.PadRight(pad[1])}|{Convert.ToString(age).PadRight(pad[2])}|{getJoinDateString().PadRight(pad[3])}|{instrument.PadRight(pad[4])}|";
+            return $"|{Convert.ToString(memberId).PadRight(pad[0] - 1)}|{name.PadRight(pad[1])}|{Convert.ToString(age).PadRight(pad[2])}|{GetJoinDateString().PadRight(pad[3])}|{instrument.PadRight(pad[4])}|";
 
         }
         
-        public int getMemberId()
+        public int GetMemberId()
         {
             return memberId;
         }
-        public string getName()
+        public string GetName()
         {
             return name;
         }
-        public int getAge()
+        public int GetAge()
         {
             return age;
         }
-        public DateOnly getJoinDate()
+        public DateOnly GetJoinDate()
         {
             return joinDate;
         }
-        public string getJoinDateString()
+        public string GetJoinDateString()
         {
             return joinDate.ToString("MM/yyyy");
         }
-        public string getInstrument()
+        public string GetInstrument()
         {
             return instrument;
         }
 
         //file writing
 
-        public override void writeBinary(BinaryWriter bw)
+        public void WriteBinary(BinaryWriter bw)
         {
             bw.Write(name);
             bw.Write(age);

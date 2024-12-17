@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 
 namespace gigAndEventCalendar
 {
-    internal class Band : FileManagment
+    internal class Band : IFileManagment
     {
 
         private string bandName;
@@ -31,28 +31,28 @@ namespace gigAndEventCalendar
 
 
         //set commands
-        public void setName(string bandName)
+        public void SetName(string bandName)
         {
             this.bandName = bandName;
         }
 
-        public void setGigs(Gigs gigs)
+        public void SetGigs(Gigs gigs)
         {
             bandGigs = gigs;
         }
 
-        public void setMembers(Members members)
+        public void SetMembers(Members members)
         {
             bandMembers = members;
         }
 
 
         //get commands
-        public string getName()
+        public string GetName()
         {
             return bandName;
         }
-        public Members getMemberCollection()
+        public Members GetMemberCollection()
         {
             return bandMembers;
         }
@@ -64,41 +64,21 @@ namespace gigAndEventCalendar
 
         //file management
 
-        public override void writeBinary(BinaryWriter bw)
+        public void WriteBinary(BinaryWriter bw)
         {
             bw.Write(bandName);
-            int memberCount= bandMembers.getCount();
+            int memberCount= bandMembers.GetCount();
             bw.Write(memberCount);
             foreach(Member member in bandMembers.GetMembers().Values)
             {
-                member.writeBinary(bw);
+                member.WriteBinary(bw);
             }
-            int gigCount = bandGigs.getCount();
+            int gigCount = bandGigs.GetCount();
             bw.Write(gigCount);
             foreach(Gig gig in bandGigs.GetGigs().Values)
             {
-                gig.writeBinary(bw);
+                gig.WriteBinary(bw);
             }
-        }
-
-        public  void writeBinaryCon(BinaryWriter bw)
-        {
-            bw.Write(bandName);
-            int memberCount = bandMembers.getCount();
-            bw.Write(memberCount);
-            ConcurrentDictionary<int, Member> conMems = new ConcurrentDictionary<int, Member>(bandMembers.GetMembers());
-            
-            Parallel.ForEach(conMems.Values, member =>
-            {
-                member.writeBinary(bw);
-            });
-            int gigCount = bandGigs.getCount();
-            ConcurrentDictionary<int, Gig> conBand = new ConcurrentDictionary<int, Gig>(bandGigs.GetGigs());
-            bw.Write(gigCount);
-            Parallel.ForEach(conBand.Values, gig =>
-            {
-                gig.writeBinary(bw);
-            });
         }
     }
 }

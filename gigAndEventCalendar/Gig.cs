@@ -4,7 +4,7 @@ using gigAndEventCalendar;
 
 namespace gigAndEventCalendar
 {
-    internal class Gig : FileManagment
+    internal class Gig : IFileManagment,IClassUi
     {
 
         private int gigId;
@@ -29,23 +29,14 @@ namespace gigAndEventCalendar
         }
 
 
-
-
-
-
-
-
-
-
-
         //set commands
 
-        public void setName(string name)
+        public void SetName(string name)
         {
             this.name = name;
         }
 
-        public bool setDate(string selectedGigDate)
+        public bool SetDate(string selectedGigDate)
         {
 
             DateOnly gigDateConv;
@@ -62,7 +53,7 @@ namespace gigAndEventCalendar
             }
         }
 
-        public bool setTime(string selectedTime)
+        public bool SetTime(string selectedTime)
         {
             TimeOnly gigTimeConv;
             if (TimeOnly.TryParse(selectedTime, out gigTimeConv) == false)
@@ -78,7 +69,7 @@ namespace gigAndEventCalendar
             }
         }
 
-        public bool setPrice(string selectedPrice)
+        public bool SetPrice(string selectedPrice)
         {
             int priceConv;
             if (int.TryParse(selectedPrice, out priceConv) == false)
@@ -94,7 +85,7 @@ namespace gigAndEventCalendar
             }
         }
 
-        public bool setCapacity(string selectedCapacity)
+        public bool SetCapacity(string selectedCapacity)
         {
             int capacityConv;
             if (int.TryParse(selectedCapacity, out capacityConv) == false)
@@ -110,30 +101,27 @@ namespace gigAndEventCalendar
             }
         }
 
-        public void setPostcode(string postcode)
+        public void SetPostcode(string postcode)
         {
             this.postcode = postcode;
         }
 
-        public void editAddress(string address)
+        public void EditAddress(string address)
         {
             this.address = address;
         }
 
 
-
-
-
         // Get Commands
 
-        public List<string> getInfo()
+        public List<string> GetInfo()
         {
             List<string> info = new List<string>(8)
             {
                 $"|{Convert.ToString(gigId)}",
                 $"{name}",
                 $"{getDate()}",
-                $"{getTime()}",
+                $"{GetTime()}",
                 $"{Convert.ToString(price)}",
                 $"{Convert.ToString(capacity)}",
                 $"{address}",
@@ -142,27 +130,22 @@ namespace gigAndEventCalendar
             return info;
         }
 
-        public string getFormatted(List<int> pad)
+        public string GetFormatted(List<int> pad)
         {
-            return $"|{Convert.ToString(gigId).PadRight(pad[0] - 1)}|{name.PadRight(pad[1])}|{getDateString().PadRight(pad[2])}|{getTime().PadRight(pad[3])}|{Convert.ToString(price).PadRight(pad[4])}|{Convert.ToString(capacity).PadRight(pad[5])}|{address.PadRight(pad[6])}|{postcode.PadRight(pad[7])}|";
+            return $"|{Convert.ToString(gigId).PadRight(pad[0] - 1)}|{name.PadRight(pad[1])}|{GetDateString().PadRight(pad[2])}|{GetTime().PadRight(pad[3])}|{Convert.ToString(price).PadRight(pad[4])}|{Convert.ToString(capacity).PadRight(pad[5])}|{address.PadRight(pad[6])}|{postcode.PadRight(pad[7])}|";
 
         }
 
-        public string getFormattedFile()
-        {
-            return $"{Convert.ToString(gigId)}|{name}|{getDateString()}|{getTime()}|{Convert.ToString(price)}|{Convert.ToString(capacity)}|{address}|{postcode}";
-        }
-
-        public int getGigId()
+        public int GetGigId()
         {
             return gigId;
         }
 
-        public string getName()
+        public string GetName()
         {
             return name;
         }
-        public string getDateString()
+        public string GetDateString()
         {
             return gigDate.ToString("dd/MM/yyyy");
 
@@ -171,29 +154,29 @@ namespace gigAndEventCalendar
         {
             return gigDate;
         }
-        public string getTime()
+        public string GetTime()
         {
             return gigTime.ToString();
         }
-        public int getPrice()
+        public int GetPrice()
         {
             return price;
         }
-        public int getCapacity()
+        public int GetCapacity()
         {
             return capacity;
         }
-        public string getAddress()
+        public string GetAddress()
         {
             return address;
         }
-        public string getPostcode()
+        public string GetPostcode()
         {
             return postcode;
         }
 
         //File Management
-        public override void writeBinary(BinaryWriter bw)
+        public void WriteBinary(BinaryWriter bw)
         {
             bw.Write(name);
             bw.Write(Convert.ToString(gigDate));
